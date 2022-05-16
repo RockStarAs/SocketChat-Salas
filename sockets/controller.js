@@ -15,7 +15,8 @@ const socketController = (socket, io) => {
         socket.join(usuario.sala);
         let personas = usuarios.agregarPersona(socket.id,usuario.nombre,usuario.sala);
         socket.to(usuario.sala).emit('listadoPersonas',usuarios.getPersonasxSala(usuario.sala));
-
+        socket.broadcast.to(usuario.sala).emit('recibeMensaje',crearMensaje('Administrador',`${usuario.nombre} ingresó el chat`));
+            
         callback(personas);
 
     });
@@ -28,10 +29,12 @@ const socketController = (socket, io) => {
         }
     });
 
-    socket.on('enviarMensaje',(data)=>{
+    socket.on('enviarMensaje',(data,callback)=>{
         let persona = usuarios.getPersona(socket.id);
         let mensaje = crearMensaje(persona.nombre, data.mensaje);
         socket.broadcast.to(persona.sala).emit('recibeMensaje',(mensaje));        
+        
+        callback(mensaje);
     });
 
     //* Mensajes privados
